@@ -25,6 +25,7 @@ from ..mode import Mode
 
 from .file import SSHFile
 from .error_tools import convert_sshfs_errors
+from .io_tools import BufferTimeoutHandler
 
 
 class SSHFS(FS):
@@ -78,7 +79,7 @@ class SSHFS(FS):
         return ssh_config
 
     def __init__(self, host, user=None, passwd=None, pkey=None, timeout=10,
-                 port=22, keepalive=10, compress=False,
+                 port=22, keepalive=10, compress=False, exec_timeout=None,
                  config_path='~/.ssh/config', **kwargs):  # noqa: D102
         super(SSHFS, self).__init__()
 
@@ -94,6 +95,7 @@ class SSHFS(FS):
         self._port = port = int(config.get('port', port))
         self._client = client = paramiko.SSHClient()
         self._timeout = timeout
+        self._exec_timeout = exec_timeout
 
         try:
             # TODO: add more options
@@ -370,7 +372,14 @@ class SSHFS(FS):
             None: if the error pipe of the command was not empty
         """
         _, out, err = self._client.exec_command(cmd, timeout=self._timeout)
-        return out.read().strip() if not err.read().strip() else None
+        with BufferTimeoutHandler(err, timeout=self._exec_timeout) as err:
+            error = err.read().strip()
+        if not error:
+            with BufferTimeoutHandler(out, timeout=self._exec_timeout) as out:
+                output = out.read().strip()
+        else:
+            output = None
+        return output
 
     def _make_info(self, name, stat_result, namespaces):
         """Create an `Info` object from a stat result.

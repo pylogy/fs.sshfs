@@ -50,6 +50,7 @@ class SSHOpener(Opener):
             timeout=params.getint('sshfs', 'timeout', fallback=10),
             keepalive=params.getint('sshfs', 'keepalive', fallback=10),
             compress=params.getboolean('sshfs', 'compress', fallback=False),
+            exec_timeout=params.getint('sshfs', 'exec_timeout', fallback=None),
             config_path=\
                 params.get('sshfs', 'config_path', fallback='~/.ssh/config')
         )
