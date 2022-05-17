@@ -46,7 +46,7 @@ class SSHOpener(Opener):
             compress=params.getboolean('sshfs', 'compress', fallback=False),
             config_path=\
                 params.get('sshfs', 'config_path', fallback='~/.ssh/config'),
-            exec_timeout=params.getint('sshfs', 'timeout', fallback=None),
+            exec_timeout=params.getint('sshfs', 'exec-timeout', fallback=None),
         )
 
         try:

@@ -521,7 +521,11 @@ class SSHFS(FS):
             None: if the error pipe of the command was not empty
         """
         _, out, err = self._client.exec_command(cmd, timeout=self._exec_timeout)
-        return out.read().strip() if not err.read().strip() else None
+        try:
+            err_data = err.read().strip()
+        except socket.timeout:
+            err_data = None
+        return out.read().strip() if not err_data else None
 
     def _make_raw_info(self, name, stat_result, namespaces):
         """Create an `Info` object from a stat result.
