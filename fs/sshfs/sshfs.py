@@ -524,8 +524,17 @@ class SSHFS(FS):
         try:
             err_data = err.read().strip()
         except socket.timeout:
-            err_data = None
-        return out.read().strip() if not err_data else None
+            err_data = b""
+
+        if not err_data:
+            try:
+                out_data = out.read().strip()
+            except socket.timeout:
+                out_data = b""
+
+            return out_data
+        else:
+            return None
 
     def _make_raw_info(self, name, stat_result, namespaces):
         """Create an `Info` object from a stat result.
